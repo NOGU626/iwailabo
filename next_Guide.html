@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <mata charset="utf-8">
+    <title>ウィート女性クリニック次回診票印刷</title>
+    <link rel ="stylesheet" href="style.css">
+    <!-- レシートの印字ように持たせているものでございます。-->
+    <script type="text/jscript" src="excanvas.js"></script>
+    <script type="text/jscript">
+        window.onload = function(){
+            var ctx = document.getElementById('c').getContext('2d');
+            var img = document.images[1];
+
+            ctx.rotate(0);
+            ctx.drawImage(img,1,1);
+
+            img.style.display = 'none';
+        };
+    </script>
+    　　　　　　<!-- ここまでがレシートのロゴ用-->
+    <script type="text/javascript" src="epos-2.9.0.js"></script>
+    <script type="text/javascript">
+    var printer = null;
+    var ePosDev = new epson.ePOSDevice();
+    ePosDev.connect('192.168.1.250', 8008, cbConnect);
+    function cbConnect(data) {
+	       if(data == 'OK') {
+		         ePosDev.createDevice('local_printer', ePosDev.DEVICE_TYPE_PRINTER, {'crypto' : false, 'buffer' : false}, cbCreateDevice_printer);
+	          } else {
+		            alert(data);
+	             }
+             }
+    function cbCreateDevice_printer(devobj, retcode) {
+	     if( retcode == 'OK' ) {
+		       printer = devobj;
+
+	          } else {
+		            alert(retcode);
+	             }
+             }
+             function executeAddedCode() {
+               var t = new Date();
+               var year= t.getFullYear();
+               var month = t.getMonth() + 1;
+               var week = t.getDay();
+               var day = t.getDate();
+               var youbi = new Array("日","月","火","水","木","金","土");
+               var ticket = year+ "-" + month + "-" + day;
+
+        var set_number = document.getElementById('number');
+        var set_date = document.getElementById('example1').value.split('-');
+               printer.addCut(printer.CUT_RESERVE);
+               printer.addPageBegin();
+               printer.addPageArea(0, 0, 800, 1200);
+               printer.addPageDirection(printer.DIRECTION_TOP_TO_BOTTOM);
+               printer.addTextLang('ja');
+               printer.addTextPosition(1200);
+               printer.addTextFont(printer.FONT_SPECIAL_A);
+               printer.addTextSize(2, 2);
+               printer.addTextVPosition(140);
+               printer.addText(set_date[0]+'年'+set_date[1]+'月'+set_date[2]+'日');
+               printer.addText(document.getElementById('hour').value + ':'+ document.getElementById('min').value+'\n');
+               printer.addTextVPosition(200);
+               printer.addText('に受診してください\n');
+               printer.addTextSize(1, 1);
+               printer.addTextVPosition(80);
+               printer.addText('本日の診療お疲れ様でした\n');
+               printer.addTextVPosition(240);
+               printer.addText('※やむを得ず休診となることもございます\n');
+               printer.addTextVPosition(270);
+               printer.addText('※次回受診時、この用紙を忘れずにお持ちください。\n');
+               printer.addPageLine(550, 277, 0, 277, printer.LINE_MEDIUM);
+               printer.addTextVPosition(310);
+               printer.addText('予約をされずに受診される方は受診の前にあらかじめHP・お電話などでご確認をお願いいたします\n※予約時間はその時間に必ず診察できるということを確約するものではなく。目安の時間となります。\n大変申し訳ございませんがお時間に余裕を持って御予約の上ご来院ください。\n');
+               printer.addTextPosition(850);
+               printer.addTextVPosition(390);
+               printer.addSymbol('https://reza.3bees.com/p/8d8f/online_reservations', printer.SYMBOL_QRCODE_MODEL_2, printer.LEVEL_0, 4, 16, 6);
+               printer.addText('\n');
+               printer.addText('住所：〒120-0034東京都足立区千住2丁目18番地　為靜ビル（いせいビル）2階\n');
+               printer.addText('電話番号：03-3888-1001(診療時間内にお電話ください。\nご予約、ご相談等お気軽にお電話ください。)\n');
+               printer.addText('ご予約はお隣のQRコードから直接予約サイトへアクセスできます。\n');
+               printer.addText('カルテ番号：'+document.getElementById('number').value+'発行日時:'+ticket);
+               printer.addPageEnd();
+               printer.addCut(printer.CUT_FEED);
+               printer.send();
+
+
+             }
+
+    </script>
+</head>
+<body>
+  <header>
+    <h1><img src="rogo.png" alt="">Wheat Women's Clinic</h1>
+  </header>
+
+  <!-- articleごとに処理別の項目にわけておきます-->
+  <article>
+    <h1>受診表印刷画面</h1>
+    <p>※次回の受診票をレシートプリンタで出力するための画面です。</p>
+    <h2>受診票の日程＆時間記入画面</h2>
+    <form>
+    <center>
+
+      <!-- ↓の宣言を書くことでフォーム入力が横一列に並びます。-->
+    <div style="display:inline-flex">
+
+    <script type="text/javascript">
+    var t = new Date();
+    var year= t.getFullYear();
+    var month = t.getMonth() + 1;
+    var week = t.getDay();
+    var day = t.getDate();
+
+    var youbi = new Array("日","月","火","水","木","金","土");
+    var now = year+ "-" + month + "-" + day;
+    document.write('<p>日付：<input type="date" id="example1" value="' + now +'"/></p>');
+    </script>
+    <p>日時：
+
+      <!-- 時間の選択肢をJava Scriptでやってるとこ Part1-->
+      <select id="hour">
+        <script type="text/jscript">
+        for(var i=1;i <=24;i++){
+          document.write('<option value="' + i + '">' + i + '</option>');
+        }
+      </script>
+    </select><p>時　</p>
+    </p>
+    <p>
+
+      <!-- 時間の選択肢をJava Scriptでやってるとこ Part2-->
+    <select id="min">
+      <script type="text/jscript">
+      for(var i=0;i <=59;i++){
+        if(i < 10){
+          document.write('<option value="'+'0' + i + '">' + '0'+i + '</option>');
+        }else{
+          document.write('<option value="' + i + '">' + i + '</option>');
+      }
+    }
+    </script>
+  </select><p>分</p></p>
+  <p>　　　</p>
+  <p>カルテ番号：
+  <input type="text" id="number" size="20" maxlength="20" class="number">
+  </p>
+  </div>
+    </center>
+    <!-- ↓の宣言を書くことでフォーム入力が横一列に並びます。-->
+    <center>
+    <div style="display:inline-flex">
+        <p><input type="button" value="印刷" onclick="executeAddedCode()"></p>
+        <p><input type="reset" value="クリア" /></p>
+    </div>
+    </center>
+    </form>
+    <img src="ff.png" class="rogo">
+
+  <!--<canvas id = c width=900 height=400> </canvas>-->
+  </article>
+
+  <footer>
+    <small>Copyright &copy; NOGU,all rightsreserved.</small>
+  </footer>
+</body>
+</html>
